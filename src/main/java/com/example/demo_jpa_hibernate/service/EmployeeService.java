@@ -2,15 +2,20 @@ package com.example.demo_jpa_hibernate.service;
 
 import com.example.demo_jpa_hibernate.dto.EmployeeRequestDTO;
 import com.example.demo_jpa_hibernate.dto.EmployeeResponseDTO;
-import com.example.demo_jpa_hibernate.dto.ProductRequestDTO;
-import com.example.demo_jpa_hibernate.dto.ProductResponsDTO;
 import com.example.demo_jpa_hibernate.entity.Employee;
-import com.example.demo_jpa_hibernate.entity.Product;
 import com.example.demo_jpa_hibernate.exception.EmployeeNotFoundException;
 import com.example.demo_jpa_hibernate.repository.EmployeeRepository;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityManager;
 
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +23,9 @@ import java.util.Optional;
 public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public List<EmployeeResponseDTO> getAllEmployees() {
         return employeeRepository.findAll().stream().map(this::mapToEmployeeResponseDTO).toList();
@@ -58,9 +66,28 @@ public class EmployeeService {
         return "Employee with id: " + id + " has been deleted";
     }
 
-    public List<EmployeeResponseDTO> filterproductsBySalary(String name, Double minSalary, Double maxSalary) {
+    public List<EmployeeResponseDTO> filterEmployeesBySalary(String name, Double minSalary, Double maxSalary) {
         List<Employee> employees = employeeRepository.filterEmployee(name, minSalary, maxSalary);
         return employees.stream().map(this::mapToEmployeeResponseDTO).toList();
+    }
+
+    public List<EmployeeResponseDTO> filteremployeesbyCriteria(String name, Double minSalary, Double maxSalary) {
+
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+        Root<Employee> employeeRoot = criteriaQuery.from(Employee.class);
+        List<Predicate> predicates = new ArrayList<>();
+        if (name != null) {
+            predicates.add(criteriaBuilder.like(employeeRoot.get("name"), "%" + name + "%"));
+        }
+        if (minSalary != null) {
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(employeeRoot.get("salary"), minSalary));
+        }
+        if (maxSalary != null) {
+            predicates.add(criteriaBuilder.lessThanOrEqualTo(employeeRoot.get("salary"), maxSalary));
+        }
+        criteriaQuery.select(employeeRoot).where(predicates.toArray(new Predicate[0]));
+        return entityManager.createQuery(criteriaQuery).getResultList().stream().map(this::mapToEmployeeResponseDTO).toList();
     }
 
 

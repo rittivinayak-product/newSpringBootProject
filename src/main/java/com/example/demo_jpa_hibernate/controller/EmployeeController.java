@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
 
 @RestController
@@ -59,7 +60,14 @@ public class EmployeeController {
     public List<EmployeeResponseDTO> filterEmployeeBySalary(@RequestParam(required = false) String name,
                                                             @RequestParam(required = false) Double minSalary,
                                                             @RequestParam(required = false) Double maxSalary) {
-        return employeeService.filterproductsBySalary(name, minSalary, maxSalary);
+        return employeeService.filterEmployeesBySalary(name, minSalary, maxSalary);
+    }
+
+    @GetMapping("/filterByCriteria")
+    public List<EmployeeResponseDTO> filterEmployeeByCriteria(@RequestParam(required = false) String name,
+                                                            @RequestParam(required = false) Double minSalary,
+                                                            @RequestParam(required = false) Double maxSalary) {
+        return employeeService.filteremployeesbyCriteria(name, minSalary, maxSalary);
     }
 
 }
