@@ -2,7 +2,9 @@ package com.example.demo_jpa_hibernate.service;
 
 import com.example.demo_jpa_hibernate.dto.EmployeeRequestDTO;
 import com.example.demo_jpa_hibernate.dto.EmployeeResponseDTO;
+import com.example.demo_jpa_hibernate.dto.ProductResponsDTO;
 import com.example.demo_jpa_hibernate.entity.Employee;
+import com.example.demo_jpa_hibernate.entity.Product;
 import com.example.demo_jpa_hibernate.exception.EmployeeNotFoundException;
 import com.example.demo_jpa_hibernate.repository.EmployeeRepository;
 import jakarta.persistence.PersistenceContext;
@@ -11,6 +13,9 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityManager;
 
@@ -88,6 +93,12 @@ public class EmployeeService {
         }
         criteriaQuery.select(employeeRoot).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(criteriaQuery).getResultList().stream().map(this::mapToEmployeeResponseDTO).toList();
+    }
+
+    public Page<EmployeeResponseDTO> paginate(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Employee> productPage = employeeRepository.findAll(pageable);
+        return productPage.map(this::mapToEmployeeResponseDTO);
     }
 
 

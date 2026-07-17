@@ -8,6 +8,7 @@ import com.example.demo_jpa_hibernate.entity.Employee;
 import com.example.demo_jpa_hibernate.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,6 +69,11 @@ public class EmployeeController {
                                                             @RequestParam(required = false) Double minSalary,
                                                             @RequestParam(required = false) Double maxSalary) {
         return employeeService.filteremployeesbyCriteria(name, minSalary, maxSalary);
+    }
+
+    @GetMapping("/page")
+    public Page<EmployeeResponseDTO> getAllEmployeesPageable(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return employeeService.paginate(page, size);
     }
 
 }
