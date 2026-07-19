@@ -12,10 +12,12 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityManager;
 
@@ -26,6 +28,7 @@ import java.util.Optional;
 
 @Service
 public class EmployeeService {
+
     @Autowired
     private EmployeeRepository employeeRepository;
 
@@ -50,9 +53,10 @@ public class EmployeeService {
     }
 
     public EmployeeResponseDTO mapToEmployeeResponseDTO(Employee employee) {
-        return new EmployeeResponseDTO(employee.getId(), employee.getName(), employee.getSalary());
+        return new EmployeeResponseDTO(employee.getId(), employee.getName(), employee.getSalary(),employee.getVersion());
     }
 
+    @Transactional
     public EmployeeResponseDTO save(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = new Employee(employeeRequestDTO.getName(),employeeRequestDTO.getSalary());
         return mapToEmployeeResponseDTO(employeeRepository.save(employee));
@@ -116,5 +120,46 @@ public class EmployeeService {
         } else {
             throw new EmployeeNotFoundException("Employee not found with id: " + id);
         }
+    }
+
+    @Transactional
+    public EmployeeResponseDTO updateSalary(Long id, EmployeeRequestDTO employeeRequestDTO) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        if (!employee.getVersion().equals(employeeRequestDTO.getVersion())) {
+            throw new ObjectOptimisticLockingFailureException(Employee.class, id);
+        }
+        employee.setSalary(employeeRequestDTO.getSalary());
+        return mapToEmployeeResponseDTO(employeeRepository.save(employee));
+    }
+
+    @Transactional
+    public void simulateCollision(Long id) {
+        Employee userAview = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee Not Found"));
+        Employee userBview = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee Not Found"));
+
+        EmployeeRequestDTO requestA = new EmployeeRequestDTO(
+                userAview.getName(),
+                85000.00,
+                userAview.getVersion()
+        );
+
+        updateSalary(id, requestA);
+
+        EmployeeRequestDTO requestB = new EmployeeRequestDTO(
+                "Updated via User B",
+                userBview.getSalary(),
+                userBview.getVersion()
+        );
+
+        try {
+            updateSalary(id, requestB);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            System.out.println(">>> DTO GUARD TRIGGERED: User B blocked. Reason: Stale version token.");
+            throw e;
+        }
+
     }
 }

@@ -15,6 +15,10 @@ public class Employee {
 
     private Double salary;
 
+    @Column
+    @Version
+    private Integer version;
+
     public Employee( String name,Double salary) {
         this.name = name;
         this.salary = salary;
@@ -46,4 +50,8 @@ public class Employee {
     public void setSalary(Double salary) {
         this.salary = salary;
     }
+
+    public Integer getVersion() { return version; }
+
+
 }

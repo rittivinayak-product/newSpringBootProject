@@ -14,6 +14,16 @@ public class EmployeeRequestDTO {
 //    @Positive(message = "Price must be positive")
     private Double salary;
 
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    private Integer version;
+
 
     public String getName() {
         return name;
@@ -37,5 +47,11 @@ public class EmployeeRequestDTO {
     public EmployeeRequestDTO(String name, Double salary) {
         this.name = name;
         this.salary = salary;
+    }
+
+    public EmployeeRequestDTO(String name, Double salary, Integer version) {
+        this.name = name;
+        this.salary = salary;
+        this.version = version;
     }
 }
