@@ -7,7 +7,7 @@ A modern, production-ready Spring Boot application designed to provide robust ba
 *   **Spring Boot 3.x Framework:** Built on the latest stable Spring Boot ecosystem for high performance.
 *   **RESTful API Endpoints:** Standardized JSON endpoints for seamless client-server communication.
 *   **Data Persistence:** Integrated with Spring Data JPA for effortless repository management.
-*   **Feature Integration:** Includes a newly integrated record deletion feature for resource management.
+*   **Feature Integration:** Includes a newly integrated record deletion feature for resource management & optimistic locking
 *   **Maven Wrapper:** Pre-configured Maven wrapper (`mvnw`) ensuring seamless builds across different environments without local Maven installations.
 
 ---
